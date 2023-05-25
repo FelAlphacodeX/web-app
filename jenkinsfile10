@@ -1,0 +1,63 @@
+pipeline{
+    agent any
+    tools{
+        maven "maven-jomacs3.8.8"
+    }
+    
+    stages{
+        stage("1. Git clone from repo"){
+            steps{
+               sh "echo start of git clone"
+               git branch: 'main', credentialsId: 'git_credential', url: 'https://github.com/FelAlphacodeX/web-app.git'
+               sh "echo end of git clone"
+            }
+        }
+        
+        stage("2. Build with maven"){
+            steps{
+               sh "echo start building"
+               sh "mvn clean package"
+               sh "echo end build"
+            }
+        }
+        
+        stage("3. Scan build with SonarQube"){
+            steps{
+                sh "echo start scanning build"
+                sh "mvn sonar:sonar"
+                sh "echo end of scan"
+            }
+        }
+        
+        stage("4. Store to Artifact"){
+            steps{
+                sh "echo start deoploying to tomcat"
+                sh "mvn deploy"
+                sh "echo end deploy"
+            }
+        }
+        
+        stage("5. Message to team on slack"){
+            steps{
+                sh "echo sending slack message"
+                slackSend channel: 'personal-devops-site', message: 'The artifact has been scanned and successfully made the mark.'
+                sh "echo message sent!"
+            }
+        }
+        
+        stage("6. Deploy to tomcat server"){
+            steps{
+                sh "echo start deplopying to tomcat server"
+                deploy adapters: [tomcat9(credentialsId: 'tcat_credentials', path: '', url: 'http://34.201.109.83:8082')], contextPath: null, war: 'target/*.war'
+            }
+        }
+        
+        stage("7. Email notification to DevOps team"){
+            steps{
+                sh "echo sending email to team"
+                emailext body: 'The Pipeline for the Application has been successfully provisioned and in service.', subject: 'Pipeline Success', to: 'felcodingx@gmail.com'
+                sh "echo email sent!"
+            }
+        }
+    }
+}

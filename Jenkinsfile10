@@ -5,7 +5,7 @@ pipeline{
     }
     
     stages{
-        stage("1. Git clone from repo"){
+        stage("1. Git clone from Repo"){
             steps{
                sh "echo start of git clone"
                git branch: 'main', credentialsId: 'git_credential', url: 'https://github.com/FelAlphacodeX/web-app.git'

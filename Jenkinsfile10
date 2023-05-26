@@ -1,5 +1,5 @@
 pipeline{
-    agent { label "node1" }
+    agent { label "jomacs node1" }
     tools{
         maven "maven-jomacs3.8.8"
     }
